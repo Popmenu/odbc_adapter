@@ -1,5 +1,5 @@
 module ODBCAdapter
-  class Column < ActiveRecord::ConnectionAdapters::Column
+  class Column < ::ActiveRecord::ConnectionAdapters::Column
     attr_reader :native_type
 
     # Add the native_type accessor to allow the native DBMS to report back what
