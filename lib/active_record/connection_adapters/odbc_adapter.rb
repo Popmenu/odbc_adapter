@@ -111,7 +111,7 @@ module ActiveRecord
       # includes checking whether the database is actually capable of
       # responding, i.e. whether the connection isn't stale.
       def active?
-        @unconfigured_connection.connected?
+        @unconfigured_connection&.connected?
       end
 
       # Disconnects from the database if already connected, and establishes a
@@ -133,7 +133,7 @@ module ActiveRecord
       # Disconnects from the database if already connected. Otherwise, this
       # method does nothing.
       def disconnect!
-        @unconfigured_connection.disconnect if @unconfigured_connection.connected?
+        @unconfigured_connection.disconnect if @unconfigured_connection&.connected?
       end
 
       # Build a new column object from the given options. Effectively the same
