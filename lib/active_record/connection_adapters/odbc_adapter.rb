@@ -111,7 +111,7 @@ module ActiveRecord
       # includes checking whether the database is actually capable of
       # responding, i.e. whether the connection isn't stale.
       def active?
-        @connection.connected?
+        @unconfigured_connection&.connected?
       end
 
       # Disconnects from the database if already connected, and establishes a
@@ -119,13 +119,13 @@ module ActiveRecord
       def reconnect!
         disconnect!
         odbc_module = @config[:encoding] == 'utf8' ? ODBC_UTF8 : ODBC
-        @connection =
+        @unconfigured_connection =
           if @config.key?(:dsn)
             odbc_module.connect(@config[:dsn], @config[:username], @config[:password])
           else
             odbc_module::Database.new.drvconnect(@config[:driver])
           end
-        configure_time_options(@connection)
+        configure_time_options(@unconfigured_connection)
         super
       end
       alias reset! reconnect!
@@ -133,7 +133,7 @@ module ActiveRecord
       # Disconnects from the database if already connected. Otherwise, this
       # method does nothing.
       def disconnect!
-        @connection.disconnect if @connection.connected?
+        @unconfigured_connection.disconnect if @unconfigured_connection&.connected?
       end
 
       # Build a new column object from the given options. Effectively the same
