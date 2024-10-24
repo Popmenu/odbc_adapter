@@ -88,10 +88,14 @@ module ActiveRecord
       # when a connection is first established.
       attr_reader :database_metadata
 
-      def initialize(connection, logger, config, database_metadata)
-        configure_time_options(connection)
-        super(connection, logger, config)
-        @database_metadata = database_metadata
+      def initialize(config_or_deprecated_connection, deprecated_logger = nil, deprecated_config = nil, deprecated_database_metadata = nil)
+        if config_or_deprecated_connection.is_a?(Hash)
+          super
+        else
+          configure_time_options(config_or_deprecated_connection)
+          super(config_or_deprecated_connection, deprecated_logger, deprecated_config)
+          @database_metadata = deprecated_database_metadata
+        end
       end
 
       # Returns the human-readable name of the adapter.
