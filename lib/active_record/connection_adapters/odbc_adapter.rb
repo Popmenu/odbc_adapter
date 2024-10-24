@@ -90,10 +90,21 @@ module ActiveRecord
 
       def initialize(config_or_deprecated_connection, deprecated_logger = nil, deprecated_config = nil, deprecated_database_metadata = nil)
         if config_or_deprecated_connection.is_a?(Hash)
-          super
+          config = config_or_deprecated_connection
+          connection, config =
+            if config.key?(:dsn)
+              ActiveRecord::Base.send(:odbc_dsn_connection, config)
+            elsif config.key?(:conn_str)
+              ActiveRecord::Base.send(:odbc_conn_str_connection, config)
+            else
+              raise ArgumentError, 'No data source name (:dsn) or connection string (:conn_str) specified.'
+            end
+          super(connection, Rails.logger, config)
+          @database_metadata = ::ODBCAdapter::DatabaseMetadata.new(connection, config[:encoding_bug])
         else
-          configure_time_options(config_or_deprecated_connection)
-          super(config_or_deprecated_connection, deprecated_logger, deprecated_config)
+          connection = config_or_deprecated_connection
+          configure_time_options(connection)
+          super(connection, deprecated_logger, deprecated_config)
           @database_metadata = deprecated_database_metadata
         end
       end
