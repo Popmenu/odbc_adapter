@@ -20,7 +20,7 @@ module ODBCAdapter
     # Executes +sql+ statement in the context of this connection using
     # +binds+ as the bind substitutes. +name+ is logged along with
     # the executed +sql+ statement.
-    def exec_query(sql, name = 'SQL', binds = [], prepare: false) # rubocop:disable Lint/UnusedMethodArgument
+    def exec_query(sql, name = 'SQL', binds = [], allow_retry: false, prepare: false) # rubocop:disable Lint/UnusedMethodArgument
       log(sql, name) do
         stmt =
           if prepared_statements
