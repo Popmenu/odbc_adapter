@@ -79,8 +79,17 @@ module ODBCAdapter
     # A custom hook to allow end users to overwrite the type casting before it
     # is returned to ActiveRecord. Useful before a full adapter has made its way
     # back into this repository.
-    def dbms_type_cast(_columns, values)
-      values
+    def dbms_type_cast(_columns, rows)
+      rows.map do |values|
+        values.map do |value|
+          case value
+          when ODBC::Date, ODBC::TimeStamp
+            value.to_s
+          else
+            value
+          end
+        end
+      end
     end
 
     # Assume received identifier is in DBMS's data dictionary case.
