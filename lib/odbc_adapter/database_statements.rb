@@ -20,7 +20,7 @@ module ODBCAdapter
     # Executes +sql+ statement in the context of this connection using
     # +binds+ as the bind substitutes. +name+ is logged along with
     # the executed +sql+ statement.
-    def exec_query(sql, name = 'SQL', binds = [], prepare: false) # rubocop:disable Lint/UnusedMethodArgument
+    def exec_query(sql, name = 'SQL', binds = [], allow_retry: false, prepare: false) # rubocop:disable Lint/UnusedMethodArgument
       log(sql, name) do
         stmt =
           if prepared_statements
@@ -79,8 +79,19 @@ module ODBCAdapter
     # A custom hook to allow end users to overwrite the type casting before it
     # is returned to ActiveRecord. Useful before a full adapter has made its way
     # back into this repository.
-    def dbms_type_cast(_columns, values)
-      values
+    def dbms_type_cast(_columns, rows)
+      rows.map do |values|
+        values.map do |value|
+          case value
+          when ODBC::Date
+            value.to_s.to_date
+          when ODBC::TimeStamp
+            value.to_s.to_datetime
+          else
+            value
+          end
+        end
+      end
     end
 
     # Assume received identifier is in DBMS's data dictionary case.
@@ -135,7 +146,7 @@ module ODBCAdapter
     end
 
     def prepared_binds(binds)
-      binds.map(&:value_for_database).map { |bind| _type_cast(bind) }
+      binds.map(&:value_for_database).map { |bind| type_cast(bind) }
     end
   end
 end
