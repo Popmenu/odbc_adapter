@@ -84,9 +84,9 @@ module ODBCAdapter
         values.map do |value|
           case value
           when ODBC::Date
-            value.to_date
+            value.to_s.to_date
           when ODBC::TimeStamp
-            value.to_datetime
+            value.to_s.to_datetime
           else
             value
           end
